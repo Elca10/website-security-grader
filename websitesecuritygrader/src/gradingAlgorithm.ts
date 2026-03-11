@@ -36,11 +36,39 @@ class SecurityRule {
 
 function loadSecurityRules(): SecurityRule[] {
     return [
-        new SecurityRule(/password\s*=\s*['"].+['"]/, ['.js', '.py', '.java'], 10, "Hardcoded password found"),
-        new SecurityRule(/apiKey\s*=\s*['"].+['"]/, ['.js', '.py', '.java'], 8, "Hardcoded API key found"),
-        new SecurityRule(/eval\(/, ['.js'], 7, "Use of eval() can lead to code injection vulnerabilities"),
-        new SecurityRule(/exec\(/, ['.py'], 7, "Use of exec() can lead to code injection vulnerabilities"),
-        new SecurityRule(/Runtime\.getRuntime\(\)\.exec\(/, ['.java'], 7, "Use of Runtime.exec() can lead to code injection vulnerabilities")
+        // --- Hardcoded Secrets ---
+        new SecurityRule(/password\s*=\s*['"].+['"]/,     ['.js', '.ts', '.py', '.java'], 10, "Hardcoded password"),
+        new SecurityRule(/apiKey\s*=\s*['"].+['"]/,       ['.js', '.ts', '.py', '.java'],  8, "Hardcoded API key"),
+        new SecurityRule(/secret\s*=\s*['"].+['"]/,       ['.js', '.ts', '.py', '.java'],  8, "Hardcoded secret"),
+        new SecurityRule(/token\s*=\s*['"].+['"]/,        ['.js', '.ts', '.py', '.java'],  8, "Hardcoded token"),
+        new SecurityRule(/private_key\s*=\s*['"].+['"]/,  ['.js', '.ts', '.py', '.java'], 10, "Hardcoded private key"),
+
+        // --- XSS (Cross-Site Scripting) ---
+        new SecurityRule(/\.innerHTML\s*=/,         ['.js', '.ts', '.html'], 8, "Direct innerHTML assignment — dangerous if value contains user input"),
+        new SecurityRule(/document\.write\s*\(/,    ['.js', '.ts', '.html'], 7, "document.write() is a common XSS vector"),
+        new SecurityRule(/eval\s*\(/,               ['.js', '.ts'],          9, "eval() executes arbitrary code — high injection risk"),
+        new SecurityRule(/dangerouslySetInnerHTML/, ['.js', '.ts', '.jsx', '.tsx'], 7, "dangerouslySetInnerHTML bypasses React's XSS protection"),
+
+        // --- SQL Injection ---
+        new SecurityRule(/"SELECT.*\+/,   ['.js', '.ts', '.py', '.java'], 9, "SQL query built with string concatenation — risk of SQL injection"),
+        new SecurityRule(/`SELECT.*\${/,  ['.js', '.ts'],                  9, "SQL query with template literal interpolation — risk of SQL injection"),
+
+        // --- Insecure Connections ---
+        new SecurityRule(/http:\/\/(?!localhost)/, ['.js', '.ts', '.py', '.html', '.java'], 5, "HTTP used instead of HTTPS — data is sent unencrypted"),
+
+        // --- Command Injection ---
+        new SecurityRule(/require\s*\(\s*['"]child_process['"]\s*\)/, ['.js', '.ts'], 7, "Importing child_process — ensure user input never reaches exec/spawn"),
+        new SecurityRule(/\.exec\s*\(/,  ['.js', '.ts', '.py'], 7, "exec() can run shell commands — dangerous with user-controlled input"),
+        new SecurityRule(/Runtime\.getRuntime\(\)\.exec\(/, ['.java'], 7, "Runtime.exec() can lead to command injection"),
+
+        // --- Weak Cryptography ---
+        new SecurityRule(/Math\.random\s*\(/, ['.js', '.ts'], 4, "Math.random() is not cryptographically secure — use crypto.getRandomValues() instead"),
+        new SecurityRule(/md5\s*\(/,           ['.js', '.ts', '.py'], 6, "MD5 is cryptographically broken — use SHA-256 or stronger"),
+        new SecurityRule(/sha1\s*\(/,          ['.js', '.ts', '.py'], 6, "SHA-1 is cryptographically broken — use SHA-256 or stronger"),
+
+        // --- Developer Oversights ---
+        new SecurityRule(/TODO.*security/i,   ['.js', '.ts', '.py', '.java', '.html'], 3, "Unresolved security TODO comment"),
+        new SecurityRule(/\/\/\s*password/i,  ['.js', '.ts'],                          5, "Commented-out password in source code"),
     ];
 }
 
@@ -95,11 +123,11 @@ export function calculateGrade(filePaths: string[]): { grade: string, issues: Se
     let grade: string;
     if (totalSeverity === 0) {
         grade = 'A';
-    } else if (totalSeverity <= 10) {
-        grade = 'B';
     } else if (totalSeverity <= 20) {
+        grade = 'B';
+    } else if (totalSeverity <= 40) {
         grade = 'C';
-    } else if (totalSeverity <= 30) {
+    } else if (totalSeverity <= 60) {
         grade = 'D';
     } else {
         grade = 'F';
