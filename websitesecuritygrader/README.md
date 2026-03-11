@@ -1,71 +1,68 @@
-# websitesecuritygrader README
+# Website Security Grader
 
-This is the README for your extension "websitesecuritygrader". After writing up a brief description, we recommend including the following sections.
+A VS Code extension that scans a website codebase for common security vulnerabilities and gives it a grade. Point it at any project, run the command, and get a report back showing exactly what's wrong and where.
 
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+This project was built as part of a class project exploring the security risks of AI-generated code. The full write-up is here: [AI Website Security Grader — Project Report](https://docs.google.com/document/d/14htszkDSfpqigc6LEexLayQU7wzmRQ2KzM_XlfZNB_M/edit?usp=sharing)
 
 ---
 
-## Following extension guidelines
+## What It Does
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+The extension scans all the files in your open VS Code workspace and checks them against a set of hard-coded security rules. Each rule looks for a known bad pattern — things like hardcoded passwords, `eval()` calls, SQL queries built with string concatenation, and so on. Every match gets flagged as an issue with a severity score between 1 and 10. Those scores are summed up and converted into a letter grade (A through F), which gets displayed in a webview panel alongside the full list of issues.
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+### What It Checks For
 
-## Working with Markdown
+| Category | Examples |
+|---|---|
+| Hardcoded secrets | `password = "..."`, `apiKey = "..."`, `token = "..."` |
+| XSS | `.innerHTML =`, `eval()`, `document.write()`, `dangerouslySetInnerHTML` |
+| SQL injection | String-concatenated queries, template literal interpolation in SQL |
+| Insecure connections | `http://` URLs (non-localhost) |
+| Command injection | `child_process` imports, `.exec()` calls |
+| Weak cryptography | `Math.random()`, `md5()`, `sha1()` |
+| Developer oversights | Security TODOs, commented-out passwords |
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+Issues are color-coded by severity in the report: **yellow** (1–3), **orange** (4–6), **red** (7–10).
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+### Grading Scale
 
-## For more information
+The grade is based on the sum of all severity scores across detected issues:
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+| Total severity | Grade |
+|---|---|
+| 0 | A |
+| 1 – 20 | B |
+| 21 – 40 | C |
+| 41 – 60 | D |
+| 60+ | F |
 
-**Enjoy!**
+---
+
+## How to Use It
+
+1. Open a project folder in VS Code
+2. Press `Cmd+Shift+P` to open the command palette
+3. Type **Generate Report** and hit Enter
+4. A report panel will open with your grade and a full list of flagged issues
+
+The scanner skips `node_modules`, `.git`, `out`, and `dist` folders automatically.
+
+---
+
+## Where the Project Is At
+
+This is an MVP. It works — open a codebase, run the command, get a report. The rules are all regex-based static analysis, which means it's fast and doesn't require any external services, but it also has limits. It can produce false positives (flagging things that are actually fine in context) and it'll miss anything that doesn't match one of the hard-coded patterns.
+
+The next big step would be layering in AI analysis on top of the regex scan, which would catch more complex vulnerabilities and reduce false positives. The groundwork for that is already in the codebase (`aiAPI.ts`) — it's just not wired up yet. Beyond that, there's room to expand the rule set, support more file types, and eventually publish the extension so anyone can use it.
+
+---
+
+## File Overview
+
+```
+src/
+├── extension.ts          # command registration and file discovery
+├── gradingAlgorithm.ts   # security rules and grading logic
+├── reportGenerator.ts    # HTML report generation
+└── aiAPI.ts              # AI analysis service (built, not yet active)
+```

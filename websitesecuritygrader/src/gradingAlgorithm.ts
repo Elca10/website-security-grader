@@ -62,12 +62,12 @@ function loadSecurityRules(): SecurityRule[] {
         new SecurityRule(/Runtime\.getRuntime\(\)\.exec\(/, ['.java'], 7, "Runtime.exec() can lead to command injection"),
 
         // --- Weak Cryptography ---
-        new SecurityRule(/Math\.random\s*\(/, ['.js', '.ts'], 4, "Math.random() is not cryptographically secure — use crypto.getRandomValues() instead"),
+        new SecurityRule(/Math\.random\s*\(/, ['.js', '.ts'], 3, "Math.random() is not cryptographically secure — use crypto.getRandomValues() instead"),
         new SecurityRule(/md5\s*\(/,           ['.js', '.ts', '.py'], 6, "MD5 is cryptographically broken — use SHA-256 or stronger"),
         new SecurityRule(/sha1\s*\(/,          ['.js', '.ts', '.py'], 6, "SHA-1 is cryptographically broken — use SHA-256 or stronger"),
 
         // --- Developer Oversights ---
-        new SecurityRule(/TODO.*security/i,   ['.js', '.ts', '.py', '.java', '.html'], 3, "Unresolved security TODO comment"),
+        new SecurityRule(/TODO.*security/i,   ['.js', '.ts', '.py', '.java', '.html'], 2, "Unresolved security TODO comment"),
         new SecurityRule(/\/\/\s*password/i,  ['.js', '.ts'],                          5, "Commented-out password in source code"),
     ];
 }
