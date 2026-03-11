@@ -17,23 +17,7 @@
         "command": "websitesecuritygrader.generateReport",
         "title": "Generate Report"
       }
-    ],
-    "configuration": {
-      "type": "object",
-      "title": "WebsiteSecurityGrader Configuration",
-      "properties": {
-        "websitesecuritygrader.apiKey": {
-          "type": "string",
-          "default": "",
-          "description": "Your Anthropic API key"
-        },
-        "websitesecuritygrader.model": {
-          "type": "string",
-          "default": "claude-sonnet-4-6",
-          "description": "Claude model to use for AI analysis"
-        }
-      }
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
