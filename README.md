@@ -1,5 +1,7 @@
 # Website Security Grader
 
+📄 [**Report.pdf**](./Report.pdf) — the full project report, in this repo.
+
 A VS Code extension that scans a website codebase for common security vulnerabilities and gives it a grade. Point it at any project, run the command, and get a report back showing exactly what's wrong and where.
 
 This project was built as part of a class project exploring the security risks of AI-generated code. The full write-up is here: [AI Website Security Grader — Project Report](https://docs.google.com/document/d/14htszkDSfpqigc6LEexLayQU7wzmRQ2KzM_XlfZNB_M/edit?usp=sharing)
